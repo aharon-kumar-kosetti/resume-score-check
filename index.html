@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade My Resume — Resume Score Checker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EFEBE0;
+    --paper-2: #F7F4EB;
+    --paper-line: #D8D0BC;
+    --ink: #21252B;
+    --ink-soft: #4B4F55;
+    --red: #C23B32;
+    --red-dark: #8E2A22;
+    --teal: #2F6F5E;
+    --gold: #C98A26;
+    --shadow: rgba(33,37,43,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top left, #E4DFCF 0%, transparent 55%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding:0 0 4rem;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+
+  header.top{
+    padding:3.2rem 24px 2rem;
+    max-width:1180px;
+    margin:0 auto;
+    position:relative;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--red-dark);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:0.9rem;
+  }
+  .eyebrow::before{
+    content:"";
+    width:8px;height:8px;border-radius:50%;
+    background:var(--red);
+    display:inline-block;
+  }
+  h1.title{
+    font-family:'Playfair Display', serif;
+    font-weight:700;
+    font-size:clamp(2.4rem, 5vw, 3.6rem);
+    line-height:1.05;
+    margin:0 0 0.6rem;
+    color:var(--ink);
+    position:relative;
+    display:inline-block;
+  }
+  h1.title .underline{
+    position:absolute;
+    left:-4px; right:-4px; bottom:-6px;
+    height:14px;
+    z-index:-1;
+  }
+  header.top p.sub{
+    font-size:1.05rem;
+    color:var(--ink-soft);
+    max-width:560px;
+    line-height:1.55;
+    margin:0.4rem 0 0;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.15fr);
+    gap:28px;
+    align-items:start;
+  }
+  @media (max-width: 880px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--paper-2);
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    box-shadow: 0 1px 0 var(--paper-line), 0 12px 28px -18px var(--shadow);
+    padding:1.6rem 1.7rem 1.8rem;
+  }
+  .panel h2{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 1rem;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .panel h2 .count{
+    font-weight:400;
+    color:var(--ink-soft);
+    opacity:0.7;
+  }
+
+  label.field-label{
+    display:block;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-soft);
+    margin:0 0 6px;
+  }
+  textarea{
+    width:100%;
+    resize:vertical;
+    min-height:170px;
+    background:
+      repeating-linear-gradient(
+        var(--paper-2),
+        var(--paper-2) 27px,
+        var(--paper-line) 28px
+      );
+    border:1px solid var(--paper-line);
+    border-radius:4px;
+    padding:10px 14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px;
+    line-height:28px;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  textarea::placeholder{color:#9B958A;font-family:'Inter',sans-serif;}
+  textarea:focus{border-color:var(--red-dark);}
+  .field-block{margin-bottom:1.2rem;}
+  .field-block:last-of-type{margin-bottom:1.4rem;}
+  .optional-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    opacity:0.65;
+    text-transform:none;
+    letter-spacing:0;
+    font-weight:400;
+  }
+
+  button.grade-btn{
+    -webkit-appearance:none;
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    width:100%;
+    padding:14px 20px;
+    background:var(--red);
+    color:#FBF3EE;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    font-weight:500;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border-radius:4px;
+    box-shadow: 0 3px 0 var(--red-dark);
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  button.grade-btn:hover{filter:brightness(1.05);}
+  button.grade-btn:active{
+    transform:translateY(3px);
+    box-shadow:0 0 0 var(--red-dark);
+  }
+  button.grade-btn:disabled{
+    background:#C9C2B2; box-shadow:0 3px 0 #ABA492; cursor:default;
+  }
+  .hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    opacity:0.75;
+    margin-top:10px;
+    text-align:center;
+  }
+
+  /* RIGHT PANEL - empty state */
+  .empty-state{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    min-height:340px;
+    color:var(--ink-soft);
+    gap:14px;
+  }
+  .empty-state svg{opacity:0.55;}
+  .empty-state p{margin:0;font-size:14px; max-width:280px; line-height:1.5;}
+
+  /* RESULTS */
+  #results{display:none;}
+  #results.show{display:block;}
+
+  .stamp-row{
+    display:flex;
+    align-items:center;
+    gap:1.6rem;
+    padding-bottom:1.4rem;
+    margin-bottom:1.4rem;
+    border-bottom:1px dashed var(--paper-line);
+    flex-wrap:wrap;
+  }
+  .stamp{
+    width:128px;height:128px;
+    border-radius:50%;
+    border:5px solid var(--red);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    transform:rotate(-9deg) scale(0.5);
+    opacity:0;
+    color:var(--red);
+    flex:none;
+    position:relative;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .stamp.animate{
+    animation: stampIn 0.5s cubic-bezier(.2,1.4,.4,1) forwards;
+  }
+  @keyframes stampIn{
+    0%{transform:rotate(-9deg) scale(1.7);opacity:0;}
+    60%{transform:rotate(-9deg) scale(0.92);opacity:1;}
+    100%{transform:rotate(-9deg) scale(1);opacity:1;}
+  }
+  .stamp::before{
+    content:"";
+    position:absolute; inset:-5px;
+    border-radius:50%;
+    border:1px solid var(--red);
+    opacity:0.55;
+  }
+  .stamp .num{font-size:2.3rem;font-weight:500;line-height:1;}
+  .stamp .of100{font-size:10px;letter-spacing:0.1em;margin-top:2px;text-transform:uppercase;}
+
+  .verdict{flex:1;min-width:200px;}
+  .verdict .label{
+    font-family:'Caveat', cursive;
+    font-size:2rem;
+    font-weight:600;
+    color:var(--red-dark);
+    line-height:1;
+    transform:rotate(-1.5deg);
+    display:inline-block;
+  }
+  .verdict p{
+    margin:0.5rem 0 0;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    max-width:360px;
+  }
+
+  .bars{display:flex;flex-direction:column;gap:14px;margin-bottom:1.6rem;}
+  .bar-row{display:grid;grid-template-columns:130px 1fr 42px;align-items:center;gap:10px;}
+  .bar-row .bname{font-size:13px;color:var(--ink);font-weight:500;}
+  .bar-track{
+    height:9px;background:var(--paper-line);border-radius:5px;overflow:hidden;
+    position:relative;
+  }
+  .bar-fill{
+    height:100%;
+    width:0%;
+    border-radius:5px;
+    background:var(--teal);
+    transition:width 0.9s cubic-bezier(.16,1,.3,1);
+  }
+  .bar-fill.warn{background:var(--gold);}
+  .bar-fill.bad{background:var(--red);}
+  .bar-row .bval{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    text-align:right;
+  }
+  .bar-row.na .bval{opacity:0.5;}
+
+  .notes-section{margin-bottom:1.6rem;}
+  .notes-title{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 0.7rem;
+  }
+  .margin-note{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    margin-bottom:10px;
+    font-family:'Caveat', cursive;
+    font-size:1.28rem;
+    line-height:1.25;
+    color:var(--red-dark);
+  }
+  .margin-note .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--red);
+    margin-top:9px;flex:none;
+  }
+  .margin-note b{font-weight:600;}
+  .margin-note .quote{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    display:block;
+    margin-top:2px;
+    font-style:normal;
+  }
+
+  .editor-notes{
+    background:var(--paper);
+    border:1px solid var(--paper-line);
+    border-radius:4px;
+    padding:1rem 1.2rem;
+  }
+  .editor-notes ul{margin:0;padding-left:18px;}
+  .editor-notes li{
+    font-size:13.5px;
+    color:var(--ink);
+    line-height:1.6;
+    margin-bottom:6px;
+  }
+  .editor-notes li:last-child{margin-bottom:0;}
+
+  footer.foot{
+    max-width:1180px;margin:2.5rem auto 0;padding:0 24px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    opacity:0.65;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .stamp, .bar-fill{animation:none !important; transition:none !important;}
+    .stamp.animate{opacity:1; transform:rotate(-9deg) scale(1);}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="eyebrow">Resume review desk</div>
+  <h1 class="title">
+    Grade my resume
+    <svg class="underline" viewBox="0 0 360 20" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M2 14 C 60 6, 110 18, 170 10 S 280 4, 358 12" fill="none" stroke="#C23B32" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+    </svg>
+  </h1>
+  <p class="sub">Paste your resume — and a job posting, if you have one — and get it back marked up like a paper on a teacher's desk: a score, a stamp, and margin notes on what to fix.</p>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- LEFT: INPUT -->
+    <div class="panel">
+      <h2>Submit your paper</h2>
+
+      <div class="field-block">
+        <label class="field-label" for="resumeInput">Resume text</label>
+        <textarea id="resumeInput" placeholder="Paste your full resume here — including bullet points, headers, and contact info."></textarea>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label" for="jdInput">Job description <span class="optional-tag">— optional, improves keyword match scoring</span></label>
+        <textarea id="jdInput" style="min-height:110px;" placeholder="Paste the job posting you're applying to, so we can check your keyword overlap."></textarea>
+      </div>
+
+      <button class="grade-btn" id="gradeBtn">Grade it</button>
+      <p class="hint">Everything runs in your browser. Nothing is uploaded anywhere.</p>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div class="panel">
+      <h2>The graded paper <span class="count" id="wordCountLabel"></span></h2>
+
+      <div id="emptyState" class="empty-state">
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+          <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/>
+          <path d="M9 13h6M9 17h4"/>
+        </svg>
+        <p>Paste your resume on the left and click <b>Grade it</b> — your marked-up results will show up here.</p>
+      </div>
+
+      <div id="results">
+        <div class="stamp-row">
+          <div class="stamp" id="stamp">
+            <div class="num" id="scoreNum">0</div>
+            <div class="of100">/ 100</div>
+          </div>
+          <div class="verdict">
+            <span class="label" id="verdictLabel">—</span>
+            <p id="verdictText"></p>
+          </div>
+        </div>
+
+        <div class="notes-title">Score breakdown</div>
+        <div class="bars" id="barsContainer"></div>
+
+        <div class="notes-section">
+          <div class="notes-title">Margin notes</div>
+          <div id="marginNotes"></div>
+        </div>
+
+        <div class="editor-notes">
+          <div class="notes-title" style="margin-bottom:0.5rem;">Editor's notes</div>
+          <ul id="editorNotes"></ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="foot">No data leaves your browser — analysis runs locally in JavaScript.</footer>
+
+<script>
+function analyzeResume(resumeText, jdText) {
+  const text = resumeText || "";
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const wordCount = words.length;
+
+  let lengthScore;
+  if (wordCount >= 350 && wordCount <= 800) lengthScore = 100;
+  else if (wordCount < 350) lengthScore = Math.max(0, Math.round((wordCount / 350) * 100));
+  else lengthScore = Math.max(0, Math.round(100 - ((wordCount - 800) / 10)));
+  lengthScore = Math.min(100, Math.max(0, lengthScore));
+
+  const sectionKeywords = ["experience","education","skills","summary","projects","certifications","objective"];
+  const lowerText = text.toLowerCase();
+  const sectionsFound = sectionKeywords.filter(k => lowerText.includes(k));
+  const sectionScore = Math.min(100, Math.round((sectionsFound.length / 4) * 100));
+
+  const emailFound = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(text);
+  const phoneFound = /(\+?\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/.test(text);
+
+  const bulletLines = lines.filter(l => /^[-•*\u2022]/.test(l));
+  const bulletRatio = lines.length ? bulletLines.length / lines.length : 0;
+  const bulletScore = Math.min(100, Math.round(bulletRatio * 200));
+
+  const strongVerbs = ["achieved","led","managed","built","designed","launched","increased","reduced","created","developed","implemented","spearheaded","negotiated","streamlined","optimized","delivered","generated","orchestrated","directed","established","improved","initiated","mentored","resolved","transformed","accelerated","authored","automated","championed","coordinated","executed","expanded","facilitated","introduced","migrated","overhauled","pioneered","recruited","reorganized","scaled","secured","simplified","trained","upgraded"];
+  const weakStarters = ["responsible for","worked on","helped with","duties included","in charge of","tasked with"];
+
+  const bulletTexts = bulletLines.map(l => l.replace(/^[-•*\u2022]\s*/, ""));
+  let strongCount = 0;
+  const weakExamples = [];
+  bulletTexts.forEach(b => {
+    const firstWord = (b.split(/\s+/)[0] || "").toLowerCase().replace(/[^a-z]/g, "");
+    if (strongVerbs.includes(firstWord)) strongCount++;
+    const lb = b.toLowerCase();
+    if (weakStarters.some(w => lb.startsWith(w))) weakExamples.push(b);
+  });
+  const actionVerbScore = bulletTexts.length ? Math.round((strongCount / bulletTexts.length) * 100) : 0;
+
+  const quantBullets = bulletTexts.filter(b => /\d/.test(b));
+  const quantScore = bulletTexts.length ? Math.round((quantBullets.length / bulletTexts.length) * 100) : 0;
+
+  const cliches = ["team player","hard worker","hardworking","detail-oriented","detail oriented","go-getter","results-driven","results oriented","think outside the box","thinks outside the box","self-starter","self starter","synergy","synergies","proactive","dynamic individual","excellent communication skills","passionate about","hit the ground running","wheelhouse","fast-paced environment"];
+  const clichesFound = cliches.filter(c => lowerText.includes(c));
+  const clicheScore = Math.max(0, 100 - clichesFound.length * 15);
+
+  let keywordScore = null;
+  let matchedKeywords = [], missingKeywords = [];
+  if (jdText && jdText.trim().length > 20) {
+    const stop = new Set(["the","and","a","to","of","in","for","with","on","as","is","are","be","or","an","at","by","this","that","will","you","your","we","our","have","has","from","it","not","can","their","they","job","role","team","work"]);
+    const jdWords = jdText.toLowerCase().match(/[a-z]{4,}/g) || [];
+    const freq = {};
+    jdWords.forEach(w => { if (!stop.has(w)) freq[w] = (freq[w]||0)+1; });
+    const topKeywords = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,20).map(e=>e[0]);
+    topKeywords.forEach(k => { if (lowerText.includes(k)) matchedKeywords.push(k); else missingKeywords.push(k); });
+    keywordScore = topKeywords.length ? Math.round((matchedKeywords.length / topKeywords.length) * 100) : null;
+  }
+
+  const categories = [
+    { name: "Keyword match", score: keywordScore, weight: 20 },
+    { name: "Action verbs", score: actionVerbScore, weight: 20 },
+    { name: "Quantified impact", score: quantScore, weight: 20 },
+    { name: "Clichés", score: clicheScore, weight: 15 },
+    { name: "Structure", score: Math.round((sectionScore + bulletScore) / 2), weight: 15 },
+    { name: "Length", score: lengthScore, weight: 10 },
+  ];
+
+  const present = categories.filter(c => c.score !== null && c.score !== undefined);
+  const totalWeight = present.reduce((s,c)=>s+c.weight,0);
+  const overall = totalWeight ? Math.round(present.reduce((s,c)=>s + (c.score * c.weight), 0) / totalWeight) : 0;
+
+  return {
+    overall, categories, wordCount, sectionsFound, emailFound, phoneFound,
+    clichesFound, weakExamples, matchedKeywords, missingKeywords,
+    bulletCount: bulletTexts.length
+  };
+}
+
+function verdictFor(score){
+  if (score >= 90) return {label:"Ready to send!", text:"Strong across the board. Give it one more read for typos, then submit with confidence."};
+  if (score >= 75) return {label:"Nearly there.", text:"Solid foundation — a few targeted edits below will sharpen it considerably."};
+  if (score >= 60) return {label:"Needs a pass.", text:"The bones are fine, but several sections need rework before this goes out."};
+  if (score >= 40) return {label:"Rough draft.", text:"Worth a real rewrite — the notes below point to the biggest gaps."};
+  return {label:"Start over?", text:"This needs a structural rework, not just a polish. Start with the notes below."};
+}
+
+function barClass(score){
+  if (score === null || score === undefined) return "";
+  if (score >= 70) return "";
+  if (score >= 45) return "warn";
+  return "bad";
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+document.getElementById("gradeBtn").addEventListener("click", function(){
+  const resumeText = document.getElementById("resumeInput").value;
+  const jdText = document.getElementById("jdInput").value;
+
+  if (!resumeText.trim() || resumeText.trim().split(/\s+/).length < 20) {
+    alert("Paste a bit more of your resume first — at least a few lines so there's something to grade.");
+    return;
+  }
+
+  const result = analyzeResume(resumeText, jdText);
+  const v = verdictFor(result.overall);
+
+  document.getElementById("emptyState").style.display = "none";
+  const resultsEl = document.getElementById("results");
+  resultsEl.classList.add("show");
+
+  document.getElementById("wordCountLabel").textContent = "· " + result.wordCount + " words";
+
+  const stampEl = document.getElementById("stamp");
+  stampEl.classList.remove("animate");
+  void stampEl.offsetWidth;
+  stampEl.classList.add("animate");
+  document.getElementById("scoreNum").textContent = result.overall;
+
+  document.getElementById("verdictLabel").textContent = v.label;
+  document.getElementById("verdictText").textContent = v.text;
+
+  const barsContainer = document.getElementById("barsContainer");
+  barsContainer.innerHTML = "";
+  result.categories.forEach(cat => {
+    const row = document.createElement("div");
+    const isNA = cat.score === null || cat.score === undefined;
+    row.className = "bar-row" + (isNA ? " na" : "");
+    row.innerHTML =
+      '<div class="bname">' + cat.name + '</div>' +
+      '<div class="bar-track"><div class="bar-fill ' + barClass(cat.score) + '" style="width:' + (isNA ? 0 : cat.score) + '%"></div></div>' +
+      '<div class="bval">' + (isNA ? "n/a" : cat.score) + '</div>';
+    barsContainer.appendChild(row);
+  });
+
+  const notes = [];
+  if (result.clichesFound.length) {
+    notes.push('<b>Cliché alert:</b> found "' + escapeHtml(result.clichesFound.slice(0,3).join('", "')) + '" — cut these, they say nothing.');
+  }
+  if (result.weakExamples.length) {
+    notes.push('<b>Weak opener:</b> <span class="quote">"' + escapeHtml(result.weakExamples[0]) + '"</span> — start with the action, not the assignment.');
+  }
+  if (result.categories.find(c=>c.name==="Quantified impact").score < 40 && result.bulletCount > 0) {
+    notes.push('<b>Where is the number?</b> Most bullets have no metric — add a %, $, or count wherever you can.');
+  }
+  if (!result.emailFound || !result.phoneFound) {
+    notes.push('<b>Missing contact info:</b> could not find a clear ' + (!result.emailFound ? "email" : "phone number") + ' — double check it is near the top.');
+  }
+  if (result.sectionsFound.length < 3) {
+    notes.push('<b>Thin structure:</b> only found ' + result.sectionsFound.length + ' clear section(s) — label Experience, Education, and Skills plainly.');
+  }
+  if (result.wordCount < 250) {
+    notes.push('<b>Too short:</b> at ' + result.wordCount + ' words, this reads thin — most reviewers expect more substance.');
+  } else if (result.wordCount > 900) {
+    notes.push('<b>Too long:</b> at ' + result.wordCount + ' words, this is a lot to read — tighten it toward one page.');
+  }
+  if (jdText.trim().length > 20 && result.missingKeywords.length) {
+    notes.push('<b>Missing from the posting:</b> "' + escapeHtml(result.missingKeywords.slice(0,4).join('", "')) + '" do not appear anywhere — work in the ones that are true.');
+  }
+  if (!notes.length) {
+    notes.push('<b>Clean pass:</b> no major red flags jumped out — nice work.');
+  }
+
+  document.getElementById("marginNotes").innerHTML = notes.map(n =>
+    '<div class="margin-note"><span class="dot"></span><span>' + n + '</span></div>'
+  ).join("");
+
+  const editorNotes = [];
+  if (result.categories.find(c=>c.name==="Action verbs").score < 60) {
+    editorNotes.push("Open each bullet with a strong past-tense verb (led, built, reduced) instead of a noun phrase.");
+  }
+  if (result.categories.find(c=>c.name==="Quantified impact").score < 60) {
+    editorNotes.push("Add a number to at least half your bullets — team size, percentage, dollar amount, or time saved.");
+  }
+  if (result.clichesFound.length) {
+    editorNotes.push("Replace vague self-descriptions with a specific accomplishment that proves the same trait.");
+  }
+  if (jdText.trim().length > 20 && result.categories.find(c=>c.name==="Keyword match").score < 60) {
+    editorNotes.push("Mirror a few more terms from the job posting itself — many ATS systems screen on exact matches.");
+  }
+  if (result.categories.find(c=>c.name==="Structure").score < 70) {
+    editorNotes.push("Use clear section headers and consistent bullet formatting so a scanner (human or software) can parse it fast.");
+  }
+  if (!editorNotes.length) {
+    editorNotes.push("This is in good shape — read it aloud once to catch anything that doesn't sound like you.");
+  }
+  document.getElementById("editorNotes").innerHTML = editorNotes.map(n => "<li>" + n + "</li>").join("");
+
+  resultsEl.scrollIntoView({behavior:"smooth", block:"nearest"});
+});
+</script>
+
+</body>
+</html>
